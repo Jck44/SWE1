@@ -26,12 +26,15 @@ public class Server
                 
                  
                 //Create a new custom thread to handle the connection
-                ClientThread cT = new ClientThread(socket);
+                ClientThread cThread = new ClientThread(socket);
+                //socket.close();
                  
                 //Start the thread!
-                new Thread(cT).start();
+                new Thread(cThread).start();
+               
                  
             }
+            
         } catch(IOException exception) {
             System.out.println("Error: " + exception);
         }
@@ -56,23 +59,21 @@ public class Server
         	BufferedReader in = null;
         	try{
         		
-        		
 	        	out = new PrintWriter(threadSocket.getOutputStream(), true);
 	        	in = new BufferedReader(new InputStreamReader(threadSocket.getInputStream()));
+	        	//HttpResponse newResponse = new HttpResponse
 	            String inputLine = null;
 	            String requestString = null;
 	            while (!(inputLine = in.readLine()).isEmpty()) {
 	                System.out.println(inputLine);
-	                if(inputLine.startsWith("GET"))
+	                if(inputLine.startsWith("GET") || inputLine.startsWith("POST"))
 	                	requestString = inputLine;
-	                else if(inputLine.startsWith("POST"))
-	                	requestString = "POST";
-	                
-	                
 	            }
-	            System.out.println(requestString);
-	            requestString = requestString.substring(requestString.indexOf('/')+1,requestString.lastIndexOf(' '));
 	            
+	            String requestPage = requestString.substring(requestString.indexOf('/')+1,requestString.lastIndexOf(' '));
+	            if(requestPage.isEmpty())
+	            	requestPage = "index.html";
+	            System.out.println(requestPage);
 	            
 	            	
 	            
@@ -82,16 +83,15 @@ public class Server
 	            out.println("Content-type: text/html\r\n");
 	            out.println("<html>");
 	            out.println("<body>");
-	            if(requestString.equals("blink.html"))
-	            	out.println(new ObjectReader("C:\\Users\\Andreas\\git\\SWE1\\src\\" + requestString, "html").toString());
-	            else
-	            	out.println("Hello");
+	            out.println(new ObjectReader(requestPage).toString());	      
 	            out.println("</body>");
 	            out.println("</html>");
 	            System.out.println("###Response sent###");
 	            in.close();
+	            out.flush();
 	            out.close();
 	        	threadSocket.close();
+	        	
         	}
         	 catch (IOException e){
              	System.out.println("Error: " + e);

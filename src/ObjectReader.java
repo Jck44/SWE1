@@ -2,42 +2,61 @@
  * 
  */
 import java.io.*;
+import java.nio.file.*;
 
 /**
  * @author Andreas
  *
  */
-public class ObjectReader {
+public class ObjectReader  {
 	
-	String path = null;
-	String objectType = null;
+	private Path path = null;
+	private String MIMEtype = null;
 	
-	public ObjectReader(String path, String objectType){
-		this.setPath(path.toLowerCase());
-		this.setObjectType(objectType);
+	protected ObjectReader(String path){
+		try {
+			this.setPath(path.toLowerCase());
+			this.setMIMEType(Files.probeContentType(this.getPath()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
+
 	private void setPath(String path){
-		this.path = path;
+		//if(
+			try{	
+				this.path = FileSystems.getDefault().getPath("html", path);
+			}
+			catch (InvalidPathException e){
+				//HTTP RESPONE 404
+				System.out.println("Error: " + e);
+			}
+		
 	}
 	
-	private void setObjectType(String objectType){
-		this.objectType = objectType;
+	private void setMIMEType(String MIMEType){
+		this.MIMEtype = MIMEType;
 	}
 	
-	private String getPath(){
+	private Path getPath(){
 		return this.path;
 	}
 	
-	private String getObjectType(){
-		return this.objectType;
+	private String pathToString(){
+		return this.path.toString();
+	}
+	
+	protected String getMIMEType(){
+		return this.MIMEtype;
 	}
 	
 	public String toString(){
 		
 		StringBuilder contentBuilder = new StringBuilder();
 		try {
-			BufferedReader input = new BufferedReader(new FileReader(this.getPath()));
+			BufferedReader input = new BufferedReader(new FileReader(this.pathToString()));
 			String temp = null;
 			while ((temp = input.readLine()) != null){
 				contentBuilder.append(temp);
@@ -52,5 +71,4 @@ public class ObjectReader {
 		
 		return contentBuilder.toString();
 	}
-
 }
